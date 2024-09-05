@@ -39,7 +39,7 @@ jobs:
             sudo systemctl enable nginx
             
             cd home
-            sudo mv * /var/www/html
+            sudo mv * /var/www/html/personal-hosting-connect
             
             
             sudo systemctl restart nginx
