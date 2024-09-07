@@ -1,78 +1,79 @@
 <?php
 
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 $errorMSG = "";
 
-// NAME
-if (empty($_POST["name"])) {
-    $errorMSG = "Name is required ";
-} else {
-    $name = $_POST["name"];
+// Helper function to sanitize inputs
+function clean_input($data) {
+    return htmlspecialchars(stripslashes(trim($data)));
 }
 
-// EMAIL
+// Validate Form Inputs
+if (empty($_POST["name"])) {
+    $errorMSG .= "Name is required ";
+} else {
+    $name = clean_input($_POST["name"]);
+}
+
 if (empty($_POST["email"])) {
     $errorMSG .= "Email is required ";
+} elseif (!filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) {
+    $errorMSG .= "Invalid email format ";
 } else {
-    $email = $_POST["email"];
+    $email = clean_input($_POST["email"]);
 }
 
-// MSG SUBJECT
 if (empty($_POST["msg_subject"])) {
     $errorMSG .= "Subject is required ";
 } else {
-    $msg_subject = $_POST["msg_subject"];
+    $msg_subject = clean_input($_POST["msg_subject"]);
 }
 
-// Phone Number
 if (empty($_POST["phone_number"])) {
-    $errorMSG .= "Number is required ";
+    $errorMSG .= "Phone number is required ";
+} elseif (!preg_match("/^[0-9]{10}$/", $_POST["phone_number"])) {
+    $errorMSG .= "Invalid phone number format ";
 } else {
-    $phone_number = $_POST["phone_number"];
+    $phone_number = clean_input($_POST["phone_number"]);
 }
 
-
-// MESSAGE
 if (empty($_POST["message"])) {
     $errorMSG .= "Message is required ";
 } else {
-    $message = $_POST["message"];
+    $message = clean_input($_POST["message"]);
 }
 
+// Database connection
+$host = "localhost"; 
+$dbname = "contact_form";
+$username = "root";  
+$password = "";
 
-$EmailTo = "example@domainname.com";
+// Create connection
+$conn = new mysqli($host, $username, $password, $dbname);
 
-$Subject = "New Message Received";
+// Check connection
+if ($conn->connect_error) {
+    die("Database Connection Failed: " . $conn->connect_error);
+}
 
-// prepare email body text
-$Body = "";
-$Body .= "Name: ";
-$Body .= $name;
-$Body .= "\n";
-$Body .= "Email: ";
-$Body .= $email;
-$Body .= "\n";
-$Body .= "Subject: ";
-$Body .= $msg_subject;
-$Body .= "\n";
-$Body .= "Phone Number: ";
-$Body .= $phone_number;
-$Body .= "\n";
-$Body .= "Message: ";
-$Body .= $message;
-$Body .= "\n";
+// Insert form data into the database if no error
+if (empty($errorMSG)) {
+    $stmt = $conn->prepare("INSERT INTO submissions (name, email, subject, phone_number, message) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssss", $name, $email, $msg_subject, $phone_number, $message);
 
-// send email
-$success = mail($EmailTo, $Subject, $Body);
-
-// redirect to success page
-if ($success && $errorMSG == ""){
-   echo "success";
-}else{
-    if($errorMSG == ""){
-        echo "Something went wrong :(";
+    if ($stmt->execute()) {
+        echo "success";
     } else {
-        echo $errorMSG;
+        echo "Error: " . $stmt->error;
     }
+
+    $stmt->close();
+} else {
+    echo $errorMSG;
 }
 
+$conn->close();
 ?>
