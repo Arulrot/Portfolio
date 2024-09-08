@@ -47,7 +47,7 @@ if (empty($_POST["message"])) {
 
 // Database connection
 $host = "localhost"; 
-$dbname = "contact_form";
+$dbname = "contact_db";
 $username = "root";  
 $password = "arulmohan7364";
 
