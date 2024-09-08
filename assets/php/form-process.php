@@ -49,7 +49,7 @@ if (empty($_POST["message"])) {
 $host = "localhost"; 
 $dbname = "contact_db";
 $username = "root";  
-$password = "";
+$password = "arulmohan7364";
 
 // Create connection
 $conn = new mysqli($host, $username, $password, $dbname);
